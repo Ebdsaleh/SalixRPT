@@ -1,4 +1,4 @@
-// Salix/version.h.in
+// src/Salix/version.h.in
 #pragma once
 #define SALIX_VERSION_MAJOR @SALIX_VERSION_MAJOR@
 #define SALIX_VERSION_MINOR @SALIX_VERSION_MINOR@

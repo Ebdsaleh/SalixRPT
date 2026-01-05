@@ -1,4 +1,4 @@
-// Salix/SalixRPT.h
+// src/Salix/SalixRPT.h
 #pragma once
 #include "../WDL/wdltypes.h"
 #define Reaproject ReaProject
@@ -14,7 +14,7 @@ namespace Salix {
     struct MusicalContext {double bpm; int numerator; int denominator; };
     struct SalixMarker { 
         std::string name;
-        int source_index; // NEW: Store the original ID (e.g., '1', '2', '3')
+        int source_index; // Store the original ID (e.g., '1', '2', '3')
         double relative_seconds; // Distance from selection start
         MusicalContext context; // The signature/tempo active AT this marker
         bool is_region;
@@ -22,7 +22,7 @@ namespace Salix {
         int color;        
     };
 
-    // NEW: The "Data Packet" for the transfer
+    // The "Data Packet" for the transfer
     struct ExportQueue {
         std::vector<SalixMarker> items;
         double total_duration_seconds;
@@ -30,6 +30,7 @@ namespace Salix {
 
     class TransferEngine {
     public:
+        static void Init(void* rec_ptr);
         static void CollectData(ReaProject* source_project);
         static void CollectDataInRange(ReaProject* source_project, double start, double end);
         
@@ -47,6 +48,14 @@ namespace Salix {
         static std::string pending_notes; // NEW: Added for Notes
         static double pending_offset;    // NEW: Added for SMPTE
         static int GetPendingMode() { return pending_mode; }
+        static ExportQueue& GetQueue() { return queue; }
+        // Deletes the data from memory
+        static void ClearQueue() {
+            GetQueue().items.clear();
+            GetQueue().total_duration_seconds = 0.0;
+            SetWaiting(false, 0);
+            waiting_for_tab = false;
+        }
 
         
     private:

@@ -1,5 +1,5 @@
-// Salix/TransferEngine.cpp
-#include "SalixRPT.h"
+// src/Salix/TransferEngine.cpp
+#include <Salix/SalixRPT.h>
 #include <string>
 using namespace Salix;
 
@@ -15,6 +15,17 @@ int Salix::TransferEngine::pending_mode = 0;
 bool TransferEngine::is_waiting = false;
 bool TransferEngine::waiting_for_tab = false; 
 double TransferEngine::pending_offset = 0.0;
+
+
+void TransferEngine::Init(void* rec_ptr) {
+    if (!rec_ptr) return;
+    reaper_plugin_info_t* rec = (reaper_plugin_info_t*)rec_ptr;
+    
+    // This loads the API pointers specifically for this .cpp file
+    REAPERAPI_LoadAPI(rec->GetFunc); 
+}
+
+
 
 void TransferEngine::CollectData(ReaProject* source_project) {
     src_project = source_project;

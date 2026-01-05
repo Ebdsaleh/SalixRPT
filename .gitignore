@@ -12,6 +12,9 @@
 *.env
 *.vscode/
 build/
+Deploy/
+build_release/
+*.bat
 tree.txt
 
 # REAPER Specific
