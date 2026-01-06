@@ -1,5 +1,4 @@
 // src/Salix/ReaperPlugin.cpp
-// We ONLY include Reaper headers here, keeping them out of the header file
 #include <Salix/SalixRPT.h> 
 #include <Salix/ReaperPlugin.h>
 #include <map>
@@ -73,6 +72,9 @@ namespace Salix {
         RegisterAction(std::make_unique<Salix::CopyFullAction>());
         RegisterAction(std::make_unique<Salix::CopySelectionAction>());
         RegisterAction(std::make_unique<Salix::ClearBufferAction>());
+        
+        RegisterAction(std::make_unique<Salix::SaveTemplateAction>());
+        RegisterAction(std::make_unique<Salix::LoadTemplateAction>());
         
         RegisterAction(std::make_unique<Salix::PasteAction>(0, "SALIXRPT_PASTE_OVERWRITE", "SalixRPT: Paste Overwrite"));
         RegisterAction(std::make_unique<Salix::PasteAction>(1, "SALIXRPT_PASTE_APPEND",    "SalixRPT: Paste Append"));
@@ -194,6 +196,8 @@ namespace Salix {
         int id_append    = GetActionID("SALIXRPT_PASTE_APPEND");
         int id_insert    = GetActionID("SALIXRPT_PASTE_INSERT");
         int id_clear     = GetActionID("SALIXRPT_CLEAR_BUFFER");
+        int id_save_tmpl = GetActionID("SALIXRPT_SAVE_TEMPLATE");
+        int id_load_tmpl = GetActionID("SALIXRPT_LOAD_TEMPLATE");
 
         // --- Build Menu ---
         HMENU salixSubMenu = CreatePopupMenu();
@@ -201,6 +205,16 @@ namespace Salix {
         // --- GROUP 1: FULL PROJECT TOOLS ---
         // (Available everywhere, not just main menu, because it's a utility now)
         AppendMenuA(salixSubMenu, MF_STRING, id_copy_full, "Copy All Metadata to Buffer");
+
+        // --- TEMPLATES SUBMENU (New!) ---
+        HMENU templateSubMenu = CreatePopupMenu();
+        AppendMenuA(templateSubMenu, MF_STRING, id_save_tmpl, "Save Buffer as Template...");
+        AppendMenuA(templateSubMenu, MF_STRING, id_load_tmpl, "Load Template to Buffer...");
+
+        // Add the submenu to the main list (maybe at the top or bottom)
+        AppendMenuA(salixSubMenu, MF_POPUP, (UINT_PTR)templateSubMenu, "Groove Templates");
+        AppendMenuA(salixSubMenu, MF_SEPARATOR, 0, NULL);
+
         // --- SECTION A: MAIN MENU ONLY 'Extensions' ---
         // We only show "Transfer Full Project" if we are in the Extensions menu.
         if (is_main_menu) {

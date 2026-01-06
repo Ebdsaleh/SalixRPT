@@ -24,6 +24,9 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 # This allows you to #include "SalixRPT.h" instead of "../Salix/SalixRPT.h"
 set(SALIX_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(REAPER_SDK_DIR "${CMAKE_CURRENT_SOURCE_DIR}/vendors/reaper/sdk")
+set(VENDOR_DIR "${CMAKE_CURRENT_SOURCE_DIR}/vendors")
+set(JSON_DIR "${CMAKE_CURRENT_SOURCE_DIR}/vendors/nlohmann_json")
+
 # Add the generated folder to your include paths
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/generated")
 
@@ -32,6 +35,8 @@ include_directories(
     ${SALIX_SRC_DIR}/Salix
     ${REAPER_SDK_DIR}
     ${REAPER_SDK_DIR}/WDL
+    ${VENDOR_DIR}
+    ${JSON_DIR}
 )
 
 # 3. Collect Source Files

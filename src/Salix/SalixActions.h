@@ -3,7 +3,10 @@
 #include <Salix/Action.h>
 #include <Salix/SalixRPT.h>
 #include <Salix/ReaperPlugin.h>
+#include <Salix/Serializer.h>
 #include "reaper_plugin_functions.h" // For Reaper API calls
+
+
 
 namespace Salix {
     // =========================================================
@@ -150,7 +153,85 @@ namespace Salix {
                     ReaperPlugin::Get().RefreshUI();
                     ShowConsoleMsg("SalixRPT: Entire Project Metadata Copied to Buffer.\n");
                 }
-            
         };
+
+
+        // =========================================================
+        // SAVE TEMPLATE ACTION
+        // =========================================================
+        class SaveTemplateAction : public Action {
+            public:
+                const char* GetCommandName() const override { return "SALIXRPT_SAVE_TEMPLATE"; }
+                const char* GetDescription() const override { return "SalixRPT: Save Buffer as Template"; }
+
+                void Execute() override {
+                    // 1. Check if buffer is empty
+                    if (TransferEngine::GetQueue().items.empty()) {
+                        ShowConsoleMsg("SalixRPT: Buffer is empty! Copy something first.\n");
+                        return;
+                    }
+
+                    // 2. Open Save File Dialog.
+                    char filename[MAX_PATH] = "";
+                    OPENFILENAMEA ofn = {0};
+                    ofn.lStructSize = sizeof(ofn);
+                    ofn.hwndOwner = GetMainHwnd();  // Parent to Reaper
+                    ofn.lpstrFilter = "Salix Template (*.json)\0*.json\0All Files (*.*)\0*.*\0";
+                    ofn.lpstrFile = filename;
+                    ofn.nMaxFile = MAX_PATH;
+                    ofn.lpstrDefExt = "json";
+                    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR;
+
+                    if (GetSaveFileNameA(&ofn)) {
+                        
+                        if (Serializer::SaveToFile(filename, TransferEngine::GetQueue())) {
+                            ShowConsoleMsg("SalixRPT: Template Saved Successfully.\n");
+                        } else {
+                            ShowConsoleMsg("SalixRPT: Error saving file.\n");
+                        }
+                    }
+                }
+        };
+
+        
+        // =========================================================
+        // LOAD TEMPLATE ACTION
+        // =========================================================
+        class LoadTemplateAction : public Action {
+            public:
+                const char* GetCommandName() const override { return "SALIXRPT_LOAD_TEMPLATE"; }
+                const char* GetDescription() const override { return "SalixRPT: Load Template to Buffer..."; }
+
+                void Execute() override {
+                    char filename[MAX_PATH] = "";
+                    OPENFILENAMEA ofn = {0};
+                    ofn.lStructSize = sizeof(ofn);
+                    ofn.hwndOwner = GetMainHwnd();
+                    ofn.lpstrFilter = "Salix Template (*.json)\0*.json\0All Files (*.*)\0*.*\0";
+                    ofn.lpstrFile = filename;
+                    ofn.nMaxFile = MAX_PATH;
+                    ofn.Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+
+                    if (GetOpenFileNameA(&ofn)) {
+                        // 1. Clear the old buffer
+                        TransferEngine::ClearQueue();
+
+                        // 2. Attempt to Load
+                        if (Serializer::LoadFromFile(filename, TransferEngine::GetQueue())) {
+                            // 3. Arm the Buffer
+                            // We set 'is_waiting' to TRUE so the Paste buttons light up.
+                            // We set 'waiting_for_tab' to FALSE so it doesn't auto-paste.
+                            TransferEngine::SetWaiting(true);
+                            TransferEngine::SetWaitingForTab(false);
+
+                            // 4. Refresh UI
+                            ReaperPlugin::Get().RefreshUI();
+                            ShowConsoleMsg("SalixRPT: Template Loaded Successfully.\n");
+                        } else {
+                            ShowConsoleMsg("SalixRPT: Error parsing JSON template.\n");
+                        }
+                    }
+                }
+            };
 
 }  // namespace Salix
